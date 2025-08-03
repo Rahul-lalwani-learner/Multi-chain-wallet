@@ -55,8 +55,8 @@ export default function WalletUnlock({ onUnlock, onReset }: WalletUnlockProps) {
 
   if (showResetConfirm) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 max-w-md w-full border border-white/20">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+        <div className="bg-slate-800/80 backdrop-blur-lg rounded-2xl p-8 max-w-md w-full border border-slate-700/50">
           <div className="text-center mb-6">
             <div className="w-16 h-16 mx-auto mb-4 bg-red-500/20 rounded-full flex items-center justify-center">
               <RotateCcw className="w-8 h-8 text-red-400" />
@@ -64,7 +64,7 @@ export default function WalletUnlock({ onUnlock, onReset }: WalletUnlockProps) {
             <h2 className="text-2xl font-bold text-white mb-2">
               Reset Wallet
             </h2>
-            <p className="text-gray-300 text-sm">
+            <p className="text-slate-300 text-sm">
               This will permanently delete your wallet and all associated data. 
               Make sure you have your seed phrase backed up.
             </p>
@@ -80,7 +80,7 @@ export default function WalletUnlock({ onUnlock, onReset }: WalletUnlockProps) {
 
             <button
               onClick={() => setShowResetConfirm(false)}
-              className="w-full bg-white/10 border border-white/20 text-white py-3 px-6 rounded-lg font-semibold hover:bg-white/20 transition-all duration-200"
+              className="w-full bg-slate-700/50 border border-slate-600/50 text-slate-200 py-3 px-6 rounded-lg font-semibold hover:bg-slate-700/70 transition-all duration-200"
             >
               Cancel
             </button>
@@ -91,23 +91,23 @@ export default function WalletUnlock({ onUnlock, onReset }: WalletUnlockProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
-      <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 max-w-md w-full border border-white/20">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+      <div className="bg-slate-800/80 backdrop-blur-lg rounded-2xl p-8 max-w-md w-full border border-slate-700/50">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
+          <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
             <Wallet className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">
             Welcome Back
           </h1>
-          <p className="text-gray-300">
+          <p className="text-slate-300">
             Enter your password to unlock your wallet
           </p>
         </div>
 
         <div className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-slate-300 mb-2">
               Password
             </label>
             <div className="relative">
@@ -116,13 +116,13 @@ export default function WalletUnlock({ onUnlock, onReset }: WalletUnlockProps) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="w-full bg-black/20 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 pr-10"
+                className="w-full bg-slate-900/50 border border-slate-600/50 rounded-lg px-4 py-3 text-white placeholder-slate-400 pr-10 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-all duration-200"
                 placeholder="Enter your password"
                 autoFocus
               />
               <button
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white"
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -133,14 +133,14 @@ export default function WalletUnlock({ onUnlock, onReset }: WalletUnlockProps) {
             <button
               onClick={handleUnlock}
               disabled={loading || !password}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-orange-600 hover:to-orange-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Unlocking...' : 'Unlock Wallet'}
             </button>
 
             <button
               onClick={() => setShowResetConfirm(true)}
-              className="w-full bg-white/10 border border-white/20 text-white py-3 px-6 rounded-lg font-semibold hover:bg-white/20 transition-all duration-200 text-sm"
+              className="w-full bg-slate-700/50 border border-slate-600/50 text-slate-200 py-3 px-6 rounded-lg font-semibold hover:bg-slate-700/70 transition-all duration-200 text-sm"
             >
               Reset Wallet
             </button>

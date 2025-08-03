@@ -93,16 +93,16 @@ export default function WalletSetup({ onComplete }: WalletSetupProps) {
 
   if (mode === 'welcome') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 max-w-md w-full border border-white/20">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+        <div className="bg-slate-800/80 backdrop-blur-lg rounded-2xl p-8 max-w-md w-full border border-slate-700/50">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
               <Wallet className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-white mb-2">
               Multi-Chain Wallet
             </h1>
-            <p className="text-gray-300">
+            <p className="text-slate-300">
               Manage your Solana and Ethereum assets in one place
             </p>
           </div>
@@ -113,7 +113,7 @@ export default function WalletSetup({ onComplete }: WalletSetupProps) {
                 setMode('create');
                 handleGenerateMnemonic();
               }}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-orange-600 to-orange-700 text-white py-3 px-6 rounded-lg font-semibold hover:from-orange-700 hover:to-orange-800 transition-all duration-200 flex items-center justify-center gap-2"
             >
               <Download className="w-5 h-5" />
               Create New Wallet
@@ -121,7 +121,7 @@ export default function WalletSetup({ onComplete }: WalletSetupProps) {
 
             <button
               onClick={() => setMode('import')}
-              className="w-full bg-white/10 border border-white/20 text-white py-3 px-6 rounded-lg font-semibold hover:bg-white/20 transition-all duration-200 flex items-center justify-center gap-2"
+              className="w-full bg-slate-700/60 border border-slate-600/50 text-white py-3 px-6 rounded-lg font-semibold hover:bg-slate-600/60 transition-all duration-200 flex items-center justify-center gap-2"
             >
               <Upload className="w-5 h-5" />
               Import Existing Wallet
@@ -134,26 +134,26 @@ export default function WalletSetup({ onComplete }: WalletSetupProps) {
 
   if (mode === 'create') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 max-w-md w-full border border-white/20">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+        <div className="bg-slate-800/80 backdrop-blur-lg rounded-2xl p-8 max-w-md w-full border border-slate-700/50">
           <h2 className="text-2xl font-bold text-white mb-6 text-center">
             Create New Wallet
           </h2>
 
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
                 Seed Phrase (Save this securely!)
               </label>
               <div className="relative">
-                <div className={`bg-black/20 border border-white/20 rounded-lg p-4 ${showMnemonic ? '' : 'blur-sm'}`}>
+                <div className={`bg-slate-900/60 border border-slate-700/50 rounded-lg p-4 ${showMnemonic ? '' : 'blur-sm'}`}>
                   <p className="text-white text-sm font-mono break-all">
                     {mnemonic}
                   </p>
                 </div>
                 <button
                   onClick={() => setShowMnemonic(!showMnemonic)}
-                  className="absolute top-2 right-2 text-gray-400 hover:text-white"
+                  className="absolute top-2 right-2 text-slate-400 hover:text-white"
                 >
                   {showMnemonic ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -164,16 +164,16 @@ export default function WalletSetup({ onComplete }: WalletSetupProps) {
                   id="confirmed"
                   checked={mnemonicConfirmed}
                   onChange={(e) => setMnemonicConfirmed(e.target.checked)}
-                  className="rounded"
+                  className="rounded w-4 h-4 text-orange-600 bg-slate-700 border-slate-600 focus:ring-orange-500"
                 />
-                <label htmlFor="confirmed" className="text-sm text-gray-300">
+                <label htmlFor="confirmed" className="text-sm text-slate-300">
                   I have saved my seed phrase securely
                 </label>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
                 Password
               </label>
               <div className="relative">
@@ -181,12 +181,12 @@ export default function WalletSetup({ onComplete }: WalletSetupProps) {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-black/20 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 pr-10"
+                  className="w-full bg-slate-900/60 border border-slate-700/50 rounded-lg px-4 py-3 text-white placeholder-slate-400 pr-10"
                   placeholder="Enter password"
                 />
                 <button
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -194,14 +194,14 @@ export default function WalletSetup({ onComplete }: WalletSetupProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
                 Confirm Password
               </label>
               <input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full bg-black/20 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400"
+                className="w-full bg-slate-900/60 border border-slate-700/50 rounded-lg px-4 py-3 text-white placeholder-slate-400"
                 placeholder="Confirm password"
               />
             </div>
@@ -210,14 +210,14 @@ export default function WalletSetup({ onComplete }: WalletSetupProps) {
               <button
                 onClick={handleCreateWallet}
                 disabled={loading || !mnemonicConfirmed || !password || !confirmPassword}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-orange-600 to-orange-700 text-white py-3 px-6 rounded-lg font-semibold hover:from-orange-700 hover:to-orange-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Creating...' : 'Create Wallet'}
               </button>
 
               <button
                 onClick={() => setMode('welcome')}
-                className="w-full bg-white/10 border border-white/20 text-white py-3 px-6 rounded-lg font-semibold hover:bg-white/20 transition-all duration-200"
+                className="w-full bg-slate-700/60 border border-slate-600/50 text-white py-3 px-6 rounded-lg font-semibold hover:bg-slate-600/60 transition-all duration-200"
               >
                 Back
               </button>
@@ -230,28 +230,28 @@ export default function WalletSetup({ onComplete }: WalletSetupProps) {
 
   if (mode === 'import') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 max-w-md w-full border border-white/20">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+        <div className="bg-slate-800/80 backdrop-blur-lg rounded-2xl p-8 max-w-md w-full border border-slate-700/50">
           <h2 className="text-2xl font-bold text-white mb-6 text-center">
             Import Wallet
           </h2>
 
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
                 Seed Phrase
               </label>
               <textarea
                 value={mnemonic}
                 onChange={(e) => setMnemonic(e.target.value)}
                 rows={4}
-                className="w-full bg-black/20 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 resize-none"
+                className="w-full bg-slate-900/60 border border-slate-700/50 rounded-lg px-4 py-3 text-white placeholder-slate-400 resize-none"
                 placeholder="Enter your 12-word seed phrase"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
                 Password
               </label>
               <div className="relative">
@@ -259,12 +259,12 @@ export default function WalletSetup({ onComplete }: WalletSetupProps) {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-black/20 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 pr-10"
+                  className="w-full bg-slate-900/60 border border-slate-700/50 rounded-lg px-4 py-3 text-white placeholder-slate-400 pr-10"
                   placeholder="Enter password"
                 />
                 <button
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -272,14 +272,14 @@ export default function WalletSetup({ onComplete }: WalletSetupProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
                 Confirm Password
               </label>
               <input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full bg-black/20 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400"
+                className="w-full bg-slate-900/60 border border-slate-700/50 rounded-lg px-4 py-3 text-white placeholder-slate-400"
                 placeholder="Confirm password"
               />
             </div>
@@ -288,14 +288,14 @@ export default function WalletSetup({ onComplete }: WalletSetupProps) {
               <button
                 onClick={handleImportWallet}
                 disabled={loading || !mnemonic || !password || !confirmPassword}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-orange-600 to-orange-700 text-white py-3 px-6 rounded-lg font-semibold hover:from-orange-700 hover:to-orange-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Importing...' : 'Import Wallet'}
               </button>
 
               <button
                 onClick={() => setMode('welcome')}
-                className="w-full bg-white/10 border border-white/20 text-white py-3 px-6 rounded-lg font-semibold hover:bg-white/20 transition-all duration-200"
+                className="w-full bg-slate-700/60 border border-slate-600/50 text-white py-3 px-6 rounded-lg font-semibold hover:bg-slate-600/60 transition-all duration-200"
               >
                 Back
               </button>

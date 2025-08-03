@@ -27,7 +27,7 @@ const WALLET_NETWORKS = [
     symbol: 'SOL',
     icon: '◎',
     getAddress: (wallet: WalletType) => wallet.solanaAddress,
-    color: 'text-purple-400'
+    color: 'text-orange-400'
   },
   {
     name: 'Ethereum',
@@ -58,7 +58,7 @@ export default function WalletTooltip({ wallet, isVisible, position, onMouseEnte
   return (
     <div 
       className={clsx(
-        'fixed z-50 bg-gray-800/95 backdrop-blur-lg border border-gray-600 rounded-lg p-4 min-w-[280px] shadow-xl',
+        'fixed z-50 bg-slate-800/95 backdrop-blur-lg border border-slate-700/60 rounded-lg p-4 min-w-[280px] shadow-xl',
         'transform transition-all duration-200 ease-out',
         // Animation
         isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
@@ -75,15 +75,15 @@ export default function WalletTooltip({ wallet, isVisible, position, onMouseEnte
       }}
     >
       {/* Header */}
-      <div className="flex items-center gap-3 mb-4 pb-3 border-b border-gray-600">
-        <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
+      <div className="flex items-center gap-3 mb-4 pb-3 border-b border-slate-700/60">
+        <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
           <span className="text-white text-sm font-bold">
             {wallet.derivationIndex + 1}
           </span>
         </div>
         <div>
           <h3 className="text-white font-semibold">{wallet.name}</h3>
-          <p className="text-gray-400 text-xs">Wallet Addresses</p>
+          <p className="text-slate-400 text-xs">Wallet Addresses</p>
         </div>
       </div>
 
@@ -95,7 +95,7 @@ export default function WalletTooltip({ wallet, isVisible, position, onMouseEnte
           return (
             <div 
               key={network.symbol}
-              className="flex items-center justify-between gap-3 p-2 rounded-lg bg-gray-700/50 hover:bg-gray-700 transition-colors group"
+              className="flex items-center justify-between gap-3 p-2 rounded-lg bg-slate-700/50 hover:bg-slate-600/60 transition-colors group"
             >
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div className="flex items-center gap-2 min-w-0">
@@ -104,7 +104,7 @@ export default function WalletTooltip({ wallet, isVisible, position, onMouseEnte
                     <div className={clsx('font-medium text-sm', network.color)}>
                       {network.name}
                     </div>
-                    <div className="text-gray-300 text-xs font-mono">
+                    <div className="text-slate-300 text-xs font-mono">
                       {formatAddress(address)}
                     </div>
                   </div>
@@ -116,7 +116,7 @@ export default function WalletTooltip({ wallet, isVisible, position, onMouseEnte
                   e.stopPropagation();
                   copyToClipboard(address, network.name);
                 }}
-                className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-600 rounded transition-all duration-200 opacity-0 group-hover:opacity-100 flex-shrink-0"
+                className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-600 rounded transition-all duration-200 opacity-0 group-hover:opacity-100 flex-shrink-0"
                 title={`Copy ${network.name} address`}
               >
                 <Copy className="w-3.5 h-3.5" />
