@@ -675,7 +675,7 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
                       <div className="flex-1 bg-slate-900/60 border border-slate-700/50 rounded-lg px-3 md:px-4 py-2 md:py-3">
                         <span className={clsx(
                           'text-white font-mono text-xs md:text-sm break-all',
-                          currentWallet && !showPrivateKey[currentWallet.id] && 'blur-sm'
+                          currentWallet && !showPrivateKey[currentWallet.id] && 'blur-sm select-none'
                         )}>
                           {currentWallet?.solanaPrivateKey}
                         </span>
@@ -708,7 +708,7 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
                       <div className="flex-1 bg-slate-900/60 border border-slate-700/50 rounded-lg px-3 md:px-4 py-2 md:py-3">
                         <span className={clsx(
                           'text-white font-mono text-xs md:text-sm break-all',
-                          currentWallet && !showPrivateKey[currentWallet.id] && 'blur-sm'
+                          currentWallet && !showPrivateKey[currentWallet.id] && 'blur-sm select-none'
                         )}>
                           {currentWallet?.ethereumPrivateKey}
                         </span>
