@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Eye, EyeOff, Wallet, RotateCcw } from 'lucide-react';
+import { Eye, EyeOff, Wallet, RotateCcw, ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useWallet } from '../contexts/WalletContext';
 import toast from 'react-hot-toast';
 
@@ -16,6 +17,7 @@ export default function WalletUnlock({ onUnlock, onReset }: WalletUnlockProps) {
   const [loading, setLoading] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
+  const router = useRouter();
   const { unlockWallet, resetWallet } = useWallet();
 
   const handleUnlock = async () => {
@@ -57,6 +59,17 @@ export default function WalletUnlock({ onUnlock, onReset }: WalletUnlockProps) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
         <div className="bg-slate-800/80 backdrop-blur-lg rounded-2xl p-8 max-w-md w-full border border-slate-700/50">
+          {/* Go Back Button */}
+          <div className="mb-6">
+            <button
+              onClick={() => router.push('/')}
+              className="group flex items-center gap-2 text-slate-400 hover:text-white transition-colors duration-200"
+            >
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
+              <span className="text-sm">Back to Home</span>
+            </button>
+          </div>
+
           <div className="text-center mb-6">
             <div className="w-16 h-16 mx-auto mb-4 bg-red-500/20 rounded-full flex items-center justify-center">
               <RotateCcw className="w-8 h-8 text-red-400" />
@@ -93,6 +106,17 @@ export default function WalletUnlock({ onUnlock, onReset }: WalletUnlockProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
       <div className="bg-slate-800/80 backdrop-blur-lg rounded-2xl p-8 max-w-md w-full border border-slate-700/50">
+        {/* Go Back Button */}
+        <div className="mb-6">
+          <button
+            onClick={() => router.push('/')}
+            className="group flex items-center gap-2 text-slate-400 hover:text-white transition-colors duration-200"
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
+            <span className="text-sm">Back to Home</span>
+          </button>
+        </div>
+
         <div className="text-center mb-8">
           <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
             <Wallet className="w-8 h-8 text-white" />

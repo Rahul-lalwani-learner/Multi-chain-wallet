@@ -18,6 +18,7 @@ interface WalletContextType {
   state: WalletState;
   createWallet: (mnemonic: string, password: string) => Promise<boolean>;
   unlockWallet: (password: string) => Promise<boolean>;
+  verifyPassword: (password: string) => boolean;
   lockWallet: () => void;
   addNewAccount: (name?: string) => void;
   updateWalletName: (walletId: string, name: string) => void;
@@ -161,6 +162,15 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const verifyPassword = (password: string): boolean => {
+    try {
+      const mnemonic = loadEncryptedMnemonic(password);
+      return !!mnemonic;
+    } catch {
+      return false;
+    }
+  };
+
   const lockWallet = () => {
     dispatch({ type: 'SET_UNLOCKED', payload: false });
     dispatch({ type: 'SET_MNEMONIC', payload: '' });
@@ -264,6 +274,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     hasWallet,
     importWallet,
     resetWallet,
+    verifyPassword,
   };
 
   return (

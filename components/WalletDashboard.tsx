@@ -23,6 +23,7 @@ import { Balance } from '../lib/types';
 import BalanceCard from './BalanceCard';
 import SendTransaction from './SendTransaction';
 import WalletTooltip from './WalletTooltip';
+import PasswordConfirmationModal from './PasswordConfirmationModal';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
 
@@ -45,12 +46,15 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
     switchNetwork,
     getBalances,
     lockWallet,
+    verifyPassword,
   } = useWallet();
 
   const [balances, setBalances] = useState<Record<string, Balance>>({});
   const [loadingBalances, setLoadingBalances] = useState<Record<string, boolean>>({});
   const [balanceTimestamps, setBalanceTimestamps] = useState<Record<string, number>>({});
   const [showPrivateKey, setShowPrivateKey] = useState<Record<string, boolean>>({});
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [pendingWalletId, setPendingWalletId] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showSendPage, setShowSendPage] = useState(false);
   const [hoveredWallet, setHoveredWallet] = useState<string | null>(null);
@@ -255,10 +259,38 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
   };
 
   const togglePrivateKey = (walletId: string) => {
-    setShowPrivateKey(prev => ({
-      ...prev,
-      [walletId]: !prev[walletId]
-    }));
+    // If already showing private key, hide it
+    if (showPrivateKey[walletId]) {
+      setShowPrivateKey(prev => ({
+        ...prev,
+        [walletId]: false
+      }));
+    } else {
+      // If not showing, request password confirmation first
+      setPendingWalletId(walletId);
+      setShowPasswordModal(true);
+    }
+  };
+
+  const handlePasswordConfirm = (password: string): boolean => {
+    if (verifyPassword(password)) {
+      if (pendingWalletId) {
+        setShowPrivateKey(prev => ({
+          ...prev,
+          [pendingWalletId]: true
+        }));
+      }
+      setShowPasswordModal(false);
+      setPendingWalletId(null);
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const handlePasswordCancel = () => {
+    setShowPasswordModal(false);
+    setPendingWalletId(null);
   };
 
   const refreshBalance = React.useCallback((walletId: string) => {
@@ -1073,6 +1105,15 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
           onMouseLeave={() => handleTooltipHover(false)}
         />
       )}
+
+      {/* Password Confirmation Modal */}
+      <PasswordConfirmationModal
+        isOpen={showPasswordModal}
+        onConfirm={handlePasswordConfirm}
+        onClose={handlePasswordCancel}
+        title="Verify Password"
+        description="Please enter your wallet password to view private keys."
+      />
     </div>
   );
 }

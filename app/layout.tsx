@@ -19,6 +19,11 @@ export const metadata: Metadata = {
   authors: [{ name: "Multi-Chain Wallet Team" }],
   viewport: "width=device-width, initial-scale=1",
   themeColor: "#ff6500",
+  icons: {
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
+  },
 };
 
 export default function RootLayout({
