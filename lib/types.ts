@@ -36,3 +36,21 @@ export interface EncryptedData {
   encrypted: string;
   iv: string;
 }
+
+export interface Transaction {
+  signature: string;
+  timestamp: number;
+  type: 'send' | 'receive';
+  amount: string;
+  from: string;
+  to: string;
+  status: 'success' | 'failed' | 'pending';
+  fee?: string;
+  blockNumber?: number;
+  explorerUrl: string;
+}
+
+export interface TransactionHistory {
+  solana: Transaction[];
+  ethereum: Transaction[];
+}

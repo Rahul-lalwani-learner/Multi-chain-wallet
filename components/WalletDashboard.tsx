@@ -24,6 +24,7 @@ import BalanceCard from './BalanceCard';
 import SendTransaction from './SendTransaction';
 import WalletTooltip from './WalletTooltip';
 import PasswordConfirmationModal from './PasswordConfirmationModal';
+import TransactionHistory from './TransactionHistory';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
 
@@ -951,6 +952,13 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
                   </div>
                 </div>
               </div>
+
+              {/* Transaction History */}
+              <TransactionHistory
+                solanaAddress={currentWallet.solanaAddress}
+                ethereumAddress={currentWallet.ethereumAddress}
+                network={state.network}
+              />
             </div>
           ) : (
             <div className="flex items-center justify-center h-full">

@@ -151,6 +151,32 @@ yarn install
 pnpm install
 ```
 
+### API Setup (Required for Transaction History)
+To fetch real transaction data, you need to configure an Alchemy API key:
+
+1. **Create Alchemy Account**:
+   - Visit [Alchemy Dashboard](https://dashboard.alchemy.com/)
+   - Sign up for a free account
+
+2. **Create API Key**:
+   - Create a new app for both Ethereum and Solana networks
+   - Copy your API key
+
+3. **Environment Configuration**:
+   ```bash
+   # Copy the example environment file
+   cp .env.local.example .env.local
+   
+   # Edit .env.local and add your API key
+   NEXT_PUBLIC_ALCHEMY_API_KEY=your_actual_api_key_here
+   ```
+
+4. **Supported Networks**:
+   - **Ethereum**: Mainnet and Sepolia testnet
+   - **Solana**: Mainnet and Devnet
+
+**Note**: Without an API key, the wallet will display mock transaction data for demonstration purposes.
+
 ### Development Server
 ```bash
 # Start development server
@@ -199,9 +225,7 @@ npm start
 
 ### Environment Variables
 ```env
-# Optional: Custom RPC endpoints
-NEXT_PUBLIC_SOLANA_RPC_URL=https://api.mainnet-beta.solana.com
-NEXT_PUBLIC_ETHEREUM_RPC_URL=https://mainnet.infura.io/v3/YOUR_PROJECT_ID
+NEXT_PUBLIC_ALCHEMY_API_KEY = "..."
 ```
 
 ### Network Configuration
