@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -17,13 +17,17 @@ export const metadata: Metadata = {
   description: "Experience the future of cryptocurrency management with our secure, fast, and intuitive multi-chain wallet supporting Solana and Ethereum. Bank-grade security, lightning-fast transactions, and beautiful design.",
   keywords: ["crypto wallet", "multi-chain", "solana", "ethereum", "blockchain", "cryptocurrency", "DeFi", "secure wallet"],
   authors: [{ name: "Multi-Chain Wallet Team" }],
-  viewport: "width=device-width, initial-scale=1",
-  themeColor: "#ff6500",
   icons: {
     icon: '/favicon.png',
     shortcut: '/favicon.png',
     apple: '/favicon.png',
   },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: "#ff6500",
 };
 
 export default function RootLayout({
