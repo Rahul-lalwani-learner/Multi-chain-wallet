@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useWallet } from '../contexts/WalletContext';
 import { Balance } from '../lib/types';
+import BalanceCard from './BalanceCard';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
 
@@ -371,62 +372,26 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
               {/* Balance Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 {/* Solana Balance */}
-                <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 md:p-6 border border-white/20">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 md:w-10 md:h-10 bg-purple-600 rounded-full flex items-center justify-center">
-                        <span className="text-white font-bold text-xs md:text-sm">SOL</span>
-                      </div>
-                      <div>
-                        <h3 className="text-base md:text-lg font-semibold text-white">Solana</h3>
-                        <p className="text-xs md:text-sm text-gray-400">SOL Balance</p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => currentWallet && refreshBalance(currentWallet.id)}
-                      className="p-1.5 md:p-2 text-gray-400 hover:text-white transition-colors"
-                      disabled={currentWallet && loadingBalances[currentWallet.id]}
-                    >
-                      <RefreshCw className={clsx('w-4 h-4 md:w-5 md:h-5', currentWallet && loadingBalances[currentWallet.id] && 'animate-spin')} />
-                    </button>
-                  </div>
-                  <div className="text-2xl md:text-3xl font-bold text-white mb-2">
-                    {currentWallet && balances[currentWallet.id]?.solana 
-                      ? parseFloat(balances[currentWallet.id].solana).toFixed(4)
-                      : '0.0000'
-                    }
-                  </div>
-                  <div className="text-xs md:text-sm text-gray-400">SOL</div>
-                </div>
+                <BalanceCard
+                  network="solana"
+                  balance={currentWallet && balances[currentWallet.id]?.solana || '0.0000'}
+                  isLoading={currentWallet ? loadingBalances[currentWallet.id] || false : false}
+                  isTestnet={state.network === 'testnet'}
+                  address={currentWallet?.solanaAddress || ''}
+                  onRefresh={() => currentWallet && refreshBalance(currentWallet.id)}
+                  onFaucetSuccess={() => currentWallet && refreshBalance(currentWallet.id)}
+                />
 
                 {/* Ethereum Balance */}
-                <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 md:p-6 border border-white/20">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                        <span className="text-white font-bold text-xs md:text-sm">ETH</span>
-                      </div>
-                      <div>
-                        <h3 className="text-base md:text-lg font-semibold text-white">Ethereum</h3>
-                        <p className="text-xs md:text-sm text-gray-400">ETH Balance</p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => currentWallet && refreshBalance(currentWallet.id)}
-                      className="p-1.5 md:p-2 text-gray-400 hover:text-white transition-colors"
-                      disabled={currentWallet && loadingBalances[currentWallet.id]}
-                    >
-                      <RefreshCw className={clsx('w-4 h-4 md:w-5 md:h-5', currentWallet && loadingBalances[currentWallet.id] && 'animate-spin')} />
-                    </button>
-                  </div>
-                  <div className="text-2xl md:text-3xl font-bold text-white mb-2">
-                    {currentWallet && balances[currentWallet.id]?.ethereum 
-                      ? parseFloat(balances[currentWallet.id].ethereum).toFixed(4)
-                      : '0.0000'
-                    }
-                  </div>
-                  <div className="text-xs md:text-sm text-gray-400">ETH</div>
-                </div>
+                <BalanceCard
+                  network="ethereum"
+                  balance={currentWallet && balances[currentWallet.id]?.ethereum || '0.0000'}
+                  isLoading={currentWallet ? loadingBalances[currentWallet.id] || false : false}
+                  isTestnet={state.network === 'testnet'}
+                  address={currentWallet?.ethereumAddress || ''}
+                  onRefresh={() => currentWallet && refreshBalance(currentWallet.id)}
+                  onFaucetSuccess={() => currentWallet && refreshBalance(currentWallet.id)}
+                />
               </div>
 
               {/* Address Information */}
