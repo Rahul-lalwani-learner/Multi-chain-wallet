@@ -138,10 +138,10 @@ m / purpose' / coin_type' / account' / change / address_index
 ### Installation
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/crypto-wallet-sol-eth-transactions.git
+git clone https://github.com/Rahul-lalwani-learner/Multi-chain-wallet.git
 
 # Navigate to project directory
-cd crypto-wallet-sol-eth-transactions
+cd Multi-chain-wallet
 
 # Install dependencies
 npm install
