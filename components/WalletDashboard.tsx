@@ -21,6 +21,7 @@ import { useWallet } from '../contexts/WalletContext';
 import { Balance } from '../lib/types';
 import BalanceCard from './BalanceCard';
 import SendTransaction from './SendTransaction';
+import WalletTooltip from './WalletTooltip';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
 
@@ -50,6 +51,67 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
   const [showPrivateKey, setShowPrivateKey] = useState<Record<string, boolean>>({});
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showSendPage, setShowSendPage] = useState(false);
+  const [hoveredWallet, setHoveredWallet] = useState<string | null>(null);
+  const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number } | null>(null);
+  const hoverTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  // Handle wallet hover with delay
+  const handleWalletHover = (walletId: string | null, event?: React.MouseEvent) => {
+    // Don't show tooltip on mobile devices
+    if (window.innerWidth < 768) return; // md breakpoint
+    
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    
+    if (walletId && event) {
+      const rect = event.currentTarget.getBoundingClientRect();
+      setTooltipPosition({
+        x: rect.right,
+        y: rect.top + rect.height / 2
+      });
+      hoverTimeoutRef.current = setTimeout(() => {
+        setHoveredWallet(walletId);
+      }, 300); // 300ms delay
+    } else {
+      // Add delay before hiding to allow moving to tooltip
+      hoverTimeoutRef.current = setTimeout(() => {
+        setHoveredWallet(null);
+        setTooltipPosition(null);
+      }, 100); // Short delay to allow mouse movement to tooltip
+    }
+  };
+
+  // Handle tooltip hover to keep it visible
+  const handleTooltipHover = (isEntering: boolean) => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    
+    if (!isEntering) {
+      // Hide tooltip when leaving tooltip area
+      hoverTimeoutRef.current = setTimeout(() => {
+        setHoveredWallet(null);
+        setTooltipPosition(null);
+      }, 100);
+    }
+  };
+
+  // Clean up timeout on unmount and handle clicks outside tooltip
+  React.useEffect(() => {
+    const handleClickOutside = () => {
+      setHoveredWallet(null);
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Balance cache timeout in milliseconds (5 minutes)
   const BALANCE_CACHE_TIMEOUT = 5 * 60 * 1000;
@@ -332,6 +394,8 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
                     // Only fetch if we don't have cached data or it's old
                     fetchBalance(wallet.id);
                   }}
+                  onMouseEnter={(e) => handleWalletHover(wallet.id, e)}
+                  onMouseLeave={() => handleWalletHover(null)}
                   className={clsx(
                     'rounded-lg border cursor-pointer transition-all duration-200 relative group',
                     isActive
@@ -757,6 +821,17 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Wallet Tooltip - Rendered as overlay (desktop only) */}
+      {hoveredWallet && window.innerWidth >= 768 && (
+        <WalletTooltip
+          wallet={state.wallets.find(wallet => wallet.id === hoveredWallet)!}
+          isVisible={!!hoveredWallet}
+          position={tooltipPosition}
+          onMouseEnter={() => handleTooltipHover(true)}
+          onMouseLeave={() => handleTooltipHover(false)}
+        />
       )}
     </div>
   );
