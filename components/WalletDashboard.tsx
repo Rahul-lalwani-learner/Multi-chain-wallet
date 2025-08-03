@@ -14,11 +14,13 @@ import {
   ChevronDown,
   Wallet,
   Trash2,
-  Menu
+  Menu,
+  Send
 } from 'lucide-react';
 import { useWallet } from '../contexts/WalletContext';
 import { Balance } from '../lib/types';
 import BalanceCard from './BalanceCard';
+import SendTransaction from './SendTransaction';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
 
@@ -44,8 +46,13 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
 
   const [balances, setBalances] = useState<Record<string, Balance>>({});
   const [loadingBalances, setLoadingBalances] = useState<Record<string, boolean>>({});
+  const [balanceTimestamps, setBalanceTimestamps] = useState<Record<string, number>>({});
   const [showPrivateKey, setShowPrivateKey] = useState<Record<string, boolean>>({});
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [showSendPage, setShowSendPage] = useState(false);
+
+  // Balance cache timeout in milliseconds (5 minutes)
+  const BALANCE_CACHE_TIMEOUT = 5 * 60 * 1000;
 
   // Close sidebar on mobile by default
   useEffect(() => {
@@ -66,25 +73,102 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
 
   const currentWallet = state.wallets.find(w => w.id === state.currentWalletId);
 
-  const fetchBalance = React.useCallback(async (walletId: string) => {
+  // Cache refs to avoid dependency loops
+  const balancesRef = React.useRef(balances);
+  const timestampsRef = React.useRef(balanceTimestamps);
+  const loadingRef = React.useRef(loadingBalances);
+  
+  // Update refs when state changes
+  React.useEffect(() => { balancesRef.current = balances; }, [balances]);
+  React.useEffect(() => { timestampsRef.current = balanceTimestamps; }, [balanceTimestamps]);
+  React.useEffect(() => { loadingRef.current = loadingBalances; }, [loadingBalances]);
+
+  // Rate limiting for balance fetches (max 1 request per wallet per 2 seconds)
+  const lastFetchAttempt = React.useRef<Record<string, number>>({});
+
+  const fetchBalance = React.useCallback(async (walletId: string, forceRefresh = false) => {
+    const now = Date.now();
+    
+    // Rate limiting - prevent too frequent requests
+    if (!forceRefresh) {
+      const lastAttempt = lastFetchAttempt.current[walletId] || 0;
+      if (now - lastAttempt < 2000) { // 2 second cooldown
+        return;
+      }
+    }
+    
+    lastFetchAttempt.current[walletId] = now;
+
+    // Check cache using refs to avoid dependency issues
+    if (!forceRefresh) {
+      const existingBalance = balancesRef.current[walletId];
+      const lastFetch = timestampsRef.current[walletId];
+      const isLoading = loadingRef.current[walletId];
+      
+      // Skip if already loading
+      if (isLoading) return;
+      
+      // Skip if we have recent data (less than 5 minutes old)
+      if (existingBalance && lastFetch && (now - lastFetch) < BALANCE_CACHE_TIMEOUT) {
+        return;
+      }
+    }
+
     setLoadingBalances(prev => ({ ...prev, [walletId]: true }));
+
     try {
       const balance = await getBalances(walletId);
       if (balance) {
+        const timestamp = Date.now();
         setBalances(prev => ({ ...prev, [walletId]: balance }));
+        setBalanceTimestamps(prev => ({ ...prev, [walletId]: timestamp }));
       }
     } catch (error) {
-      console.error('Error fetching balance:', error);
+      console.error('Error fetching balance for wallet', walletId, ':', error);
+    } finally {
+      setLoadingBalances(prev => ({ ...prev, [walletId]: false }));
     }
-    setLoadingBalances(prev => ({ ...prev, [walletId]: false }));
-  }, [getBalances]);
+  }, [getBalances, BALANCE_CACHE_TIMEOUT]);
 
+  // Clear cache when network changes
   useEffect(() => {
-    // Load balances for all wallets
-    state.wallets.forEach(wallet => {
-      fetchBalance(wallet.id);
-    });
-  }, [state.wallets, state.network, fetchBalance]);
+    setBalances({});
+    setBalanceTimestamps({});
+  }, [state.network]);
+
+  // Fetch balance for current wallet when it changes or network changes
+  useEffect(() => {
+    if (state.currentWalletId) {
+      const timer = setTimeout(() => {
+        // Call fetchBalance directly instead of through dependency
+        (async () => {
+          const now = Date.now();
+          const walletId = state.currentWalletId!;
+          
+          // Check rate limiting
+          const lastAttempt = lastFetchAttempt.current[walletId] || 0;
+          if (now - lastAttempt < 1000) return; // 1 second for forced refresh
+          
+          lastFetchAttempt.current[walletId] = now;
+          setLoadingBalances(prev => ({ ...prev, [walletId]: true }));
+
+          try {
+            const balance = await getBalances(walletId);
+            if (balance) {
+              setBalances(prev => ({ ...prev, [walletId]: balance }));
+              setBalanceTimestamps(prev => ({ ...prev, [walletId]: now }));
+            }
+          } catch (error) {
+            console.error('Error fetching balance for wallet', walletId, ':', error);
+          } finally {
+            setLoadingBalances(prev => ({ ...prev, [walletId]: false }));
+          }
+        })();
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [state.currentWalletId, state.network, getBalances]);
 
   const copyToClipboard = async (text: string, type: string) => {
     try {
@@ -108,9 +192,9 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
     }));
   };
 
-  const refreshBalance = (walletId: string) => {
-    fetchBalance(walletId);
-  };
+  const refreshBalance = React.useCallback((walletId: string) => {
+    fetchBalance(walletId, true);
+  }, [fetchBalance]);
 
   const handleNetworkChange = (network: 'mainnet' | 'testnet') => {
     console.log('Switching network to:', network);
@@ -136,6 +220,17 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
             </h1>
           </div>
           <div className="flex items-center gap-2">
+            {/* Mobile Send Button */}
+            {currentWallet && (
+              <button
+                onClick={() => setShowSendPage(true)}
+                className="p-2 bg-purple-600 rounded-lg text-white hover:bg-purple-700 transition-all duration-200"
+                title="Send Transaction"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            )}
+
             {/* Mobile Network Dropdown */}
             <button
               onClick={(e) => {
@@ -232,7 +327,11 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
               return (
                 <div
                   key={wallet.id}
-                  onClick={() => switchAccount(wallet.id)}
+                  onClick={() => {
+                    switchAccount(wallet.id);
+                    // Only fetch if we don't have cached data or it's old
+                    fetchBalance(wallet.id);
+                  }}
                   className={clsx(
                     'rounded-lg border cursor-pointer transition-all duration-200 relative group',
                     isActive
@@ -337,6 +436,18 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
               </div>
 
               <div className="flex items-center gap-3">
+                {/* Send Button */}
+                {currentWallet && (
+                  <button
+                    onClick={() => setShowSendPage(true)}
+                    className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-all duration-200"
+                    title="Send Transaction"
+                  >
+                    <Send className="w-4 h-4" />
+                    <span className="hidden sm:inline">Send</span>
+                  </button>
+                )}
+
                 {/* Network Dropdown */}
                 <div className="relative z-50">
                   <button
@@ -367,7 +478,29 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
 
         {/* Content Area */}
         <div className="flex-1 p-4 md:p-6 overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent hover:scrollbar-thumb-white/30" style={{ scrollbarWidth: 'thin' }}>
-          {currentWallet ? (
+          {showSendPage ? (
+            currentWallet && balances[currentWallet.id] ? (
+              <SendTransaction
+                currentWallet={currentWallet}
+                balance={balances[currentWallet.id]}
+                onBack={() => setShowSendPage(false)}
+                onTransactionSuccess={() => {
+                  // Refresh balance after successful transaction
+                  refreshBalance(currentWallet.id);
+                }}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-white/10 rounded-full flex items-center justify-center">
+                    <Wallet className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <p className="text-gray-400 text-lg">Loading wallet data...</p>
+                </div>
+              </div>
+            )
+          ) : (
+            currentWallet ? (
             <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
               {/* Balance Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
@@ -546,6 +679,7 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
                 <p className="text-gray-400 text-lg">Select an account to view details</p>
               </div>
             </div>
+          )
           )}
         </div>
       </div>
