@@ -13,8 +13,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Multi-Chain Crypto Wallet",
-  description: "A secure multi-chain wallet for Solana and Ethereum",
+  title: "Multi-Chain Crypto Wallet - Secure Solana & Ethereum Management",
+  description: "Experience the future of cryptocurrency management with our secure, fast, and intuitive multi-chain wallet supporting Solana and Ethereum. Bank-grade security, lightning-fast transactions, and beautiful design.",
+  keywords: ["crypto wallet", "multi-chain", "solana", "ethereum", "blockchain", "cryptocurrency", "DeFi", "secure wallet"],
+  authors: [{ name: "Multi-Chain Wallet Team" }],
+  viewport: "width=device-width, initial-scale=1",
+  themeColor: "#ff6500",
 };
 
 export default function RootLayout({

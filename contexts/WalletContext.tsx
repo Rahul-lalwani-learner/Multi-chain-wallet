@@ -19,7 +19,8 @@ interface WalletContextType {
   createWallet: (mnemonic: string, password: string) => Promise<boolean>;
   unlockWallet: (password: string) => Promise<boolean>;
   lockWallet: () => void;
-  addNewAccount: () => void;
+  addNewAccount: (name?: string) => void;
+  updateWalletName: (walletId: string, name: string) => void;
   deleteAccount: (walletId: string) => void;
   switchAccount: (walletId: string) => void;
   switchNetwork: (network: 'mainnet' | 'testnet') => void;
@@ -34,6 +35,7 @@ type WalletAction =
   | { type: 'SET_MNEMONIC'; payload: string }
   | { type: 'SET_WALLETS'; payload: Wallet[] }
   | { type: 'ADD_WALLET'; payload: Wallet }
+  | { type: 'UPDATE_WALLET'; payload: { walletId: string; updates: Partial<Wallet> } }
   | { type: 'DELETE_WALLET'; payload: string }
   | { type: 'SET_CURRENT_WALLET'; payload: string }
   | { type: 'SET_NETWORK'; payload: 'mainnet' | 'testnet' }
@@ -55,6 +57,15 @@ const walletReducer = (state: WalletState, action: WalletAction): WalletState =>
       return { ...state, wallets: action.payload };
     case 'ADD_WALLET':
       return { ...state, wallets: [...state.wallets, action.payload] };
+    case 'UPDATE_WALLET':
+      return {
+        ...state,
+        wallets: state.wallets.map(wallet =>
+          wallet.id === action.payload.walletId
+            ? { ...wallet, ...action.payload.updates }
+            : wallet
+        )
+      };
     case 'DELETE_WALLET':
       return { 
         ...state, 
@@ -155,16 +166,37 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'SET_MNEMONIC', payload: '' });
   };
 
-  const addNewAccount = () => {
+  const addNewAccount = (name?: string) => {
     if (!state.mnemonic) return;
     
     const newIndex = state.wallets.length;
-    const newWallet = generateWallet(state.mnemonic, newIndex);
+    const defaultName = `Account ${newIndex + 1}`;
+    const finalName = name?.trim() || defaultName;
+    
+    const newWallet = generateWallet(state.mnemonic, newIndex, finalName);
     
     const updatedWallets = [...state.wallets, newWallet];
     saveWalletState({ wallets: updatedWallets });
     
     dispatch({ type: 'ADD_WALLET', payload: newWallet });
+    
+    // Switch to the new account
+    dispatch({ type: 'SET_CURRENT_WALLET', payload: newWallet.id });
+  };
+
+  const updateWalletName = (walletId: string, name: string) => {
+    const trimmedName = name.trim();
+    if (!trimmedName) return;
+    
+    dispatch({ type: 'UPDATE_WALLET', payload: { walletId, updates: { name: trimmedName } } });
+    
+    // Update storage
+    const updatedWallets = state.wallets.map(wallet =>
+      wallet.id === walletId ? { ...wallet, name: trimmedName } : wallet
+    );
+    saveWalletState({ wallets: updatedWallets });
+    
+    toast.success(`Account renamed to "${trimmedName}"`);
   };
 
   const deleteAccount = (walletId: string) => {
@@ -224,6 +256,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     unlockWallet,
     lockWallet,
     addNewAccount,
+    updateWalletName,
     deleteAccount,
     switchAccount,
     switchNetwork,

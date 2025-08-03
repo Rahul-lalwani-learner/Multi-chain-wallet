@@ -15,7 +15,8 @@ import {
   Wallet,
   Trash2,
   Menu,
-  Send
+  Send,
+  Edit2
 } from 'lucide-react';
 import { useWallet } from '../contexts/WalletContext';
 import { Balance } from '../lib/types';
@@ -38,6 +39,7 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
   const {
     state,
     addNewAccount,
+    updateWalletName,
     deleteAccount,
     switchAccount,
     switchNetwork,
@@ -132,6 +134,11 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
   }, []);
   const [showNetworkDropdown, setShowNetworkDropdown] = useState(false);
   const [deleteConfirmWalletId, setDeleteConfirmWalletId] = useState<string | null>(null);
+  const [showCreateAccountModal, setShowCreateAccountModal] = useState(false);
+  const [newAccountName, setNewAccountName] = useState('');
+  const [editingWalletId, setEditingWalletId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState('');
+  const [editingContext, setEditingContext] = useState<'sidebar' | 'header' | null>(null);
 
   const currentWallet = state.wallets.find(w => w.id === state.currentWalletId);
 
@@ -266,6 +273,63 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
     toast.success(`Switched to ${network === 'mainnet' ? 'Mainnet' : 'Devnet/Testnet'}`);
   };
 
+  const handleCreateAccount = () => {
+    if (!state.mnemonic) return;
+    
+    const newIndex = state.wallets.length;
+    const defaultName = `Account ${newIndex + 1}`;
+    const finalName = newAccountName.trim() || defaultName;
+    
+    addNewAccount(finalName);
+    setShowCreateAccountModal(false);
+    setNewAccountName('');
+    toast.success(`${finalName} created successfully`);
+  };
+
+  const handleEditName = (walletId: string, currentName: string, context: 'sidebar' | 'header' = 'sidebar') => {
+    console.log('handleEditName called with:', { walletId, currentName, context });
+    setEditingWalletId(walletId);
+    setEditingName(currentName);
+    setEditingContext(context);
+  };
+
+  // Focus and select the input when editing starts
+  React.useEffect(() => {
+    if (editingWalletId && editingContext) {
+      // Use more specific selector based on context
+      const selector = editingContext === 'sidebar' 
+        ? `input[data-editing="${editingWalletId}"][data-context="sidebar"]`
+        : `input[data-editing="${editingWalletId}"][data-context="header"]`;
+      
+      const input = document.querySelector(selector) as HTMLInputElement;
+      console.log('Input found:', input, 'for context:', editingContext);
+      if (input) {
+        input.focus();
+        input.select(); // Select all text for easy replacement
+      }
+    }
+  }, [editingWalletId, editingContext]);
+
+  const handleSaveEdit = () => {
+    if (editingWalletId && editingName.trim()) {
+      if (editingName.trim() !== state.wallets.find(w => w.id === editingWalletId)?.name) {
+        updateWalletName(editingWalletId, editingName.trim());
+      }
+      setEditingWalletId(null);
+      setEditingName('');
+      setEditingContext(null);
+    } else {
+      // If empty name, cancel the edit
+      handleCancelEdit();
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingWalletId(null);
+    setEditingName('');
+    setEditingContext(null);
+  };
+
   const currentNetwork = NETWORKS.find(n => n.value === state.network);
 
   return (
@@ -278,7 +342,46 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
               <Wallet className="w-4 h-4 text-white" />
             </div>
             <h1 className="text-lg font-bold text-white">
-              {currentWallet ? currentWallet.name : 'Multi-Chain Wallet'}
+              {currentWallet ? (
+                <div>
+                  {editingWalletId === currentWallet.id ? (
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="text"
+                        value={editingName}
+                        onChange={(e) => setEditingName(e.target.value)}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            handleSaveEdit();
+                          } else if (e.key === 'Escape') {
+                            handleCancelEdit();
+                          }
+                        }}
+                        onBlur={handleSaveEdit}
+                        className="bg-slate-900/60 border border-slate-600/50 rounded px-2 py-1 text-white text-lg font-bold focus:ring-1 focus:ring-orange-500/50 focus:border-orange-500/50 min-w-0 max-w-32"
+                        placeholder="Enter new name"
+                        data-editing={currentWallet.id}
+                        data-context="header"
+                        autoFocus
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1 group">
+                      <div>{currentWallet.name}</div>
+                      <button
+                        onClick={() => handleEditName(currentWallet.id, currentWallet.name, 'header')}
+                        className="p-1 text-slate-400 hover:text-white transition-colors opacity-0 group-hover:opacity-100"
+                        title="Edit Name"
+                      >
+                        <Edit2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+                  <div className="text-xs text-slate-400 font-normal">Account #{currentWallet.derivationIndex + 1}</div>
+                </div>
+              ) : (
+                'Multi-Chain Wallet'
+              )}
             </h1>
           </div>
           <div className="flex items-center gap-2">
@@ -366,7 +469,7 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
         {/* Add Account Button */}
         <div className="p-4 border-b border-slate-700/50">
           <button
-            onClick={addNewAccount}
+            onClick={() => setShowCreateAccountModal(true)}
             className={clsx(
               'bg-orange-600 hover:bg-orange-700 rounded-lg text-white transition-all duration-200 flex items-center gap-2',
               sidebarCollapsed ? 'w-8 h-8 justify-center' : 'w-full py-3 px-4'
@@ -418,39 +521,82 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
                   ) : (
                     <>
                       <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center flex-shrink-0">
                             <span className="text-white font-bold">
                               {wallet.derivationIndex + 1}
                             </span>
                           </div>
-                          <span className="font-medium text-white">{wallet.name}</span>
+                          <div className="min-w-0 flex-1">
+                            {editingWalletId === wallet.id && editingContext === 'sidebar' ? (
+                              <div className="flex flex-col gap-1">
+                                <input
+                                  type="text"
+                                  value={editingName}
+                                  onChange={(e) => setEditingName(e.target.value)}
+                                  onKeyPress={(e) => {
+                                    if (e.key === 'Enter') {
+                                      handleSaveEdit();
+                                    } else if (e.key === 'Escape') {
+                                      handleCancelEdit();
+                                    }
+                                  }}
+                                  onBlur={handleSaveEdit}
+                                  className="bg-slate-900/60 border border-orange-500/50 rounded px-2 py-1 text-white text-sm focus:ring-1 focus:ring-orange-500/50 focus:border-orange-500/50 min-w-0 w-full"
+                                  placeholder="Enter new account name"
+                                  data-editing={wallet.id}
+                                  data-context="sidebar"
+                                  autoFocus
+                                />
+                                <span className="text-xs text-slate-400">Press Enter to save, Esc to cancel</span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1 min-w-0">
+                                <span className="font-medium text-white block truncate">{wallet.name}</span>
+                                <button
+                                  onClick={(e) => {
+                                    console.log('Edit button clicked for wallet:', wallet.id);
+                                    e.stopPropagation();
+                                    handleEditName(wallet.id, wallet.name, 'sidebar');
+                                  }}
+                                  className="p-1 text-slate-400 hover:text-white transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0"
+                                  title="Edit Name"
+                                >
+                                  <Edit2 className="w-3 h-3" />
+                                </button>
+                              </div>
+                            )}
+                            <span className="text-xs text-slate-400">Account #{wallet.derivationIndex + 1}</span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              refreshBalance(wallet.id);
-                            }}
-                            className="p-1 text-gray-400 hover:text-white transition-colors"
-                            disabled={isLoading}
-                            title="Refresh Balance"
-                          >
-                            <RefreshCw className={clsx('w-4 h-4', isLoading && 'animate-spin')} />
-                          </button>
-                          {state.wallets.length > 1 && (
+                        {/* Only show action buttons when not editing */}
+                        {!(editingWalletId === wallet.id && editingContext === 'sidebar') && (
+                          <div className="flex items-center gap-1 flex-shrink-0">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setDeleteConfirmWalletId(wallet.id);
+                                refreshBalance(wallet.id);
                               }}
-                              className="p-1 text-slate-400 hover:text-red-400 transition-colors"
-                              title="Delete Account"
+                              className="p-1 text-gray-400 hover:text-white transition-colors"
+                              disabled={isLoading}
+                              title="Refresh Balance"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <RefreshCw className={clsx('w-4 h-4', isLoading && 'animate-spin')} />
                             </button>
-                          )}
-                        </div>
+                            {state.wallets.length > 1 && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDeleteConfirmWalletId(wallet.id);
+                                }}
+                                className="p-1 text-slate-400 hover:text-red-400 transition-colors"
+                                title="Delete Account"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                        )}
                       </div>
                       
                       <div className="text-sm text-slate-300 space-y-1">
@@ -495,7 +641,47 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <h1 className="text-xl lg:text-2xl font-bold text-white">
-                  {currentWallet ? currentWallet.name : 'Multi-Chain Wallet'}
+                  {currentWallet ? (
+                    <div>
+                      {editingWalletId === currentWallet.id && editingContext === 'header' ? (
+                        <div className="flex flex-col gap-1">
+                          <input
+                            type="text"
+                            value={editingName}
+                            onChange={(e) => setEditingName(e.target.value)}
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                handleSaveEdit();
+                              } else if (e.key === 'Escape') {
+                                handleCancelEdit();
+                              }
+                            }}
+                            onBlur={handleSaveEdit}
+                            className="bg-slate-900/60 border border-orange-500/50 rounded-lg px-3 py-1 text-white text-xl lg:text-2xl font-bold focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 min-w-0"
+                            placeholder="Enter new account name"
+                            data-editing={currentWallet.id}
+                            data-context="header"
+                            autoFocus
+                          />
+                          <span className="text-xs text-slate-400">Press Enter to save, Esc to cancel</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 group">
+                          <div>{currentWallet.name}</div>
+                          <button
+                            onClick={() => handleEditName(currentWallet.id, currentWallet.name, 'header')}
+                            className="p-1 text-slate-400 hover:text-white transition-colors opacity-0 group-hover:opacity-100"
+                            title="Edit Name"
+                          >
+                            <Edit2 className="w-5 h-5" />
+                          </button>
+                        </div>
+                      )}
+                      <div className="text-sm text-slate-400 font-normal">Account #{currentWallet.derivationIndex + 1}</div>
+                    </div>
+                  ) : (
+                    'Multi-Chain Wallet'
+                  )}
                 </h1>
               </div>
 
@@ -784,6 +970,60 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
             ))}
           </div>
         </>
+      )}
+
+      {/* Create Account Modal */}
+      {showCreateAccountModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[10000] p-4">
+          <div className="bg-slate-800 rounded-lg p-4 md:p-6 max-w-md w-full border border-slate-700">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-8 bg-orange-500/20 rounded-full flex items-center justify-center">
+                <Plus className="w-4 h-4 text-orange-500" />
+              </div>
+              <h3 className="text-lg font-semibold text-white">Create New Account</h3>
+            </div>
+            
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Account Name (optional)
+              </label>
+              <input
+                type="text"
+                value={newAccountName}
+                onChange={(e) => setNewAccountName(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleCreateAccount();
+                  }
+                }}
+                className="w-full bg-slate-900/60 border border-slate-600/50 rounded-lg px-3 py-2 text-white placeholder-slate-400 focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-all"
+                placeholder={`Account ${state.wallets.length + 1}`}
+                autoFocus
+              />
+              <p className="text-xs text-slate-400 mt-1">
+                Leave empty to use default name: Account {state.wallets.length + 1}
+              </p>
+            </div>
+            
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setShowCreateAccountModal(false);
+                  setNewAccountName('');
+                }}
+                className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateAccount}
+                className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+              >
+                Create Account
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Delete Confirmation Modal */}
