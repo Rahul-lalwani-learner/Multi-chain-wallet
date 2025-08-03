@@ -122,9 +122,9 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
   const currentNetwork = NETWORKS.find(n => n.value === state.network);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex flex-col md:flex-row">
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex flex-col md:flex-row overflow-hidden h-screen">
       {/* Mobile Header (visible on sm/mobile only) */}
-      <div className="md:hidden bg-white/10 backdrop-blur-lg border-b border-white/20 p-4">
+      <div className="md:hidden bg-white/10 backdrop-blur-lg border-b border-white/20 p-4 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
@@ -168,12 +168,12 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
 
       {/* Sidebar */}
       <div className={clsx(
-        'bg-white/10 backdrop-blur-lg border-r border-white/20 transition-all duration-300 flex flex-col',
+        'bg-white/10 backdrop-blur-lg border-r border-white/20 transition-all duration-300 flex flex-col overflow-hidden',
         // Mobile behavior - slide in/out with transform
-        'md:relative md:inset-auto md:z-auto fixed inset-y-0 left-0 z-40 w-80',
+        'md:relative md:inset-auto md:z-auto fixed inset-y-0 left-0 z-40 w-80 h-full',
         sidebarCollapsed ? '-translate-x-full md:translate-x-0' : 'translate-x-0',
         // Desktop behavior
-        'md:flex',
+        'md:flex md:h-screen',
         sidebarCollapsed ? 'md:w-16' : 'md:w-80'
       )}>
         {/* Sidebar Header */}
@@ -221,7 +221,7 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
         </div>
 
         {/* Accounts List */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto overscroll-contain p-4 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent hover:scrollbar-thumb-white/30 max-h-full" style={{ scrollbarWidth: 'thin' }}>
           <div className="space-y-3">
             {state.wallets.map((wallet) => {
               const balance = balances[wallet.id];
@@ -324,7 +324,7 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
       />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex-1 flex flex-col min-h-0 md:h-screen overflow-hidden">
         {/* Top Header (hidden on mobile, shown on md+) */}
         <div className="hidden md:block bg-white/10 backdrop-blur-lg border-b border-white/20">
           <div className="px-4 lg:px-6 py-4">
@@ -365,7 +365,7 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 p-4 md:p-6 overflow-y-auto">
+        <div className="flex-1 p-4 md:p-6 overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent hover:scrollbar-thumb-white/30" style={{ scrollbarWidth: 'thin' }}>
           {currentWallet ? (
             <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
               {/* Balance Cards */}
