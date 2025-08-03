@@ -32,7 +32,7 @@ export default function FaucetButton({ network, address, onSuccess, disabled }: 
       const faucetInfo = FaucetService.getFaucetInfo(network);
       
       if (network === 'solana') {
-        toast.success(`${faucetInfo.amount} airdrop submitted! Tokens will appear in 10-30 seconds.`, {
+        toast.success(`${faucetInfo.amount} airdrop submitted! Tokens will appear in 10-30 seconds. Please note that SOL may not arrive if the faucet is empty or experiencing issues. Try multiple faucets if needed.`, {
           duration: 5000,
         });
         
