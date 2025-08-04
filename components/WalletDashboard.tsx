@@ -27,6 +27,8 @@ import WalletTooltip from './WalletTooltip';
 import PasswordConfirmationModal from './PasswordConfirmationModal';
 import TransactionHistory from './TransactionHistory';
 import SecurityDashboard from './SecurityDashboard';
+import ViewSeedPhrase from './ViewSeedPhrase';
+import SeedPhraseModal from './SeedPhraseModal';
 import { hasInsecureWalletData } from '../lib/storage';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
@@ -61,6 +63,7 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
   const [pendingWalletId, setPendingWalletId] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showSendPage, setShowSendPage] = useState(false);
+  const [showSeedPhraseModal, setShowSeedPhraseModal] = useState(false);
   const [hoveredWallet, setHoveredWallet] = useState<string | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number } | null>(null);
   const hoverTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
@@ -676,6 +679,12 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
             })}
           </div>
         </div>
+        
+        {/* View Seed Phrase Button - Fixed at bottom */}
+        <ViewSeedPhrase 
+          isCollapsed={sidebarCollapsed} 
+          onOpenSeedPhrase={() => setShowSeedPhraseModal(true)} 
+        />
       </div>
 
       {/* Mobile sidebar backdrop */}
@@ -1163,6 +1172,12 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
         isOpen={showSecurityDashboard}
         onClose={() => setShowSecurityDashboard(false)}
         userPassword={undefined} // Will prompt for password when needed
+      />
+
+      {/* Seed Phrase Modal */}
+      <SeedPhraseModal
+        isOpen={showSeedPhraseModal}
+        onClose={() => setShowSeedPhraseModal(false)}
       />
     </div>
   );

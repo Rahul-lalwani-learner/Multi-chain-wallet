@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Shield, CheckCircle, AlertTriangle, XCircle, RefreshCw, X, Lock, Key, Activity, TrendingUp } from 'lucide-react';
-import { analyzeWalletSecurity, autoFixCriticalVulnerabilities, SECURITY_BEST_PRACTICES, SecurityReport, SecurityVulnerability } from '../lib/security';
+import { analyzeWalletSecurity, autoFixCriticalVulnerabilities, SECURITY_BEST_PRACTICES, SecurityReport} from '../lib/security';
 
 interface SecurityDashboardProps {
   isOpen: boolean;
@@ -136,8 +136,13 @@ const SecurityDashboard: React.FC<SecurityDashboardProps> = ({ isOpen, onClose, 
                       <Activity className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <p className="text-gray-600 font-semibold">Risk Level</p>
-                      <p className="text-xl font-bold">{securityReport.riskLevel}</p>
+                      <p className="text-gray-700 font-semibold">Risk Level</p>
+                      <p className={`text-xl font-bold ${
+                        securityReport.riskLevel === 'LOW' ? 'text-green-700' :
+                        securityReport.riskLevel === 'MEDIUM' ? 'text-yellow-700' :
+                        securityReport.riskLevel === 'HIGH' ? 'text-orange-700' :
+                        'text-red-700'
+                      }`}>{securityReport.riskLevel}</p>
                     </div>
                   </div>
                 </div>
@@ -148,8 +153,8 @@ const SecurityDashboard: React.FC<SecurityDashboardProps> = ({ isOpen, onClose, 
                       <Lock className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <p className="text-blue-600 font-semibold">Encryption</p>
-                      <p className="text-xl font-bold">
+                      <p className="text-blue-700 font-semibold">Encryption</p>
+                      <p className="text-xl font-bold text-blue-800">
                         {securityReport.vulnerabilities.some(f => f.severity === 'CRITICAL') ? 'Weak' : 'Strong'}
                       </p>
                     </div>
@@ -162,8 +167,8 @@ const SecurityDashboard: React.FC<SecurityDashboardProps> = ({ isOpen, onClose, 
                       <Key className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <p className="text-purple-600 font-semibold">Issues Found</p>
-                      <p className="text-xl font-bold">{securityReport.vulnerabilities.length}</p>
+                      <p className="text-purple-700 font-semibold">Issues Found</p>
+                      <p className="text-xl font-bold text-purple-800">{securityReport.vulnerabilities.length}</p>
                     </div>
                   </div>
                 </div>
