@@ -16,7 +16,8 @@ import {
   Trash2,
   Menu,
   Send,
-  Edit2
+  Edit2,
+  Shield
 } from 'lucide-react';
 import { useWallet } from '../contexts/WalletContext';
 import { Balance } from '../lib/types';
@@ -25,6 +26,8 @@ import SendTransaction from './SendTransaction';
 import WalletTooltip from './WalletTooltip';
 import PasswordConfirmationModal from './PasswordConfirmationModal';
 import TransactionHistory from './TransactionHistory';
+import SecurityDashboard from './SecurityDashboard';
+import { hasInsecureWalletData } from '../lib/storage';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
 
@@ -144,6 +147,8 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
   const [editingWalletId, setEditingWalletId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
   const [editingContext, setEditingContext] = useState<'sidebar' | 'header' | null>(null);
+  const [showSecurityDashboard, setShowSecurityDashboard] = useState(false);
+  const [hasInsecureData, setHasInsecureData] = useState(false);
 
   const currentWallet = state.wallets.find(w => w.id === state.currentWalletId);
 
@@ -209,6 +214,27 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
     setBalances({});
     setBalanceTimestamps({});
   }, [state.network]);
+
+  // Security check: Detect insecure wallet data and warn user
+  useEffect(() => {
+    const checkSecurity = async () => {
+      try {
+        const insecureData = hasInsecureWalletData();
+        setHasInsecureData(insecureData);
+        
+        if (insecureData) {
+          toast.error('Security Warning: Private keys are not encrypted!', {
+            duration: 5000,
+            position: 'top-center',
+          });
+        }
+      } catch (error) {
+        console.error('Security check failed:', error);
+      }
+    };
+
+    checkSecurity();
+  }, [state.wallets]); // Re-check when wallets change
 
   // Fetch balance for current wallet when it changes or network changes
   useEffect(() => {
@@ -299,8 +325,6 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
   }, [fetchBalance]);
 
   const handleNetworkChange = (network: 'mainnet' | 'testnet') => {
-    console.log('Switching network to:', network);
-    console.log('Current network before switch:', state.network);
     switchNetwork(network);
     setShowNetworkDropdown(false);
     toast.success(`Switched to ${network === 'mainnet' ? 'Mainnet' : 'Devnet/Testnet'}`);
@@ -320,7 +344,6 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
   };
 
   const handleEditName = (walletId: string, currentName: string, context: 'sidebar' | 'header' = 'sidebar') => {
-    console.log('handleEditName called with:', { walletId, currentName, context });
     setEditingWalletId(walletId);
     setEditingName(currentName);
     setEditingContext(context);
@@ -335,7 +358,6 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
         : `input[data-editing="${editingWalletId}"][data-context="header"]`;
       
       const input = document.querySelector(selector) as HTMLInputElement;
-      console.log('Input found:', input, 'for context:', editingContext);
       if (input) {
         input.focus();
         input.select(); // Select all text for easy replacement
@@ -410,7 +432,7 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
                       </button>
                     </div>
                   )}
-                  <div className="text-xs text-slate-400 font-normal">Account #{currentWallet.derivationIndex + 1}</div>
+                  <div className="text-xs text-slate-400 font-normal">Account #{(currentWallet.derivationIndex ?? 0) + 1}</div>
                 </div>
               ) : (
                 'Multi-Chain Wallet'
@@ -544,7 +566,7 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
                     <div className="flex flex-col items-center justify-center h-full">
                       <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center mb-2">
                         <span className="text-white text-sm font-bold">
-                          {wallet.derivationIndex + 1}
+                          {(wallet.derivationIndex ?? 0) + 1}
                         </span>
                       </div>
                       {isActive && (
@@ -557,7 +579,7 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
                         <div className="flex items-center gap-3 min-w-0 flex-1">
                           <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center flex-shrink-0">
                             <span className="text-white font-bold">
-                              {wallet.derivationIndex + 1}
+                              {(wallet.derivationIndex ?? 0) + 1}
                             </span>
                           </div>
                           <div className="min-w-0 flex-1">
@@ -588,7 +610,6 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
                                 <span className="font-medium text-white block truncate">{wallet.name}</span>
                                 <button
                                   onClick={(e) => {
-                                    console.log('Edit button clicked for wallet:', wallet.id);
                                     e.stopPropagation();
                                     handleEditName(wallet.id, wallet.name, 'sidebar');
                                   }}
@@ -599,7 +620,7 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
                                 </button>
                               </div>
                             )}
-                            <span className="text-xs text-slate-400">Account #{wallet.derivationIndex + 1}</span>
+                            <span className="text-xs text-slate-400">Account #{(wallet.derivationIndex ?? 0) + 1}</span>
                           </div>
                         </div>
                         {/* Only show action buttons when not editing */}
@@ -710,7 +731,7 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
                           </button>
                         </div>
                       )}
-                      <div className="text-sm text-slate-400 font-normal">Account #{currentWallet.derivationIndex + 1}</div>
+                      <div className="text-sm text-slate-400 font-normal">Account #{(currentWallet.derivationIndex ?? 0) + 1}</div>
                     </div>
                   ) : (
                     'Multi-Chain Wallet'
@@ -1121,6 +1142,27 @@ export default function WalletDashboard({ onLock }: WalletDashboardProps) {
         onClose={handlePasswordCancel}
         title="Verify Password"
         description="Please enter your wallet password to view private keys."
+      />
+
+      {/* Floating Security Check Button */}
+      <button
+        onClick={() => setShowSecurityDashboard(true)}
+        className={clsx(
+          'fixed bottom-6 right-6 p-4 rounded-full shadow-lg z-50 transition-all duration-200',
+          hasInsecureData 
+            ? 'bg-red-600 hover:bg-red-500 animate-pulse shadow-red-500/50' 
+            : 'bg-blue-600 hover:bg-blue-500 shadow-blue-500/30'
+        )}
+        title={hasInsecureData ? 'SECURITY RISK - Click to fix!' : 'Security Dashboard'}
+      >
+        <Shield className="w-6 h-6 text-white" />
+      </button>
+
+      {/* Security Dashboard */}
+      <SecurityDashboard
+        isOpen={showSecurityDashboard}
+        onClose={() => setShowSecurityDashboard(false)}
+        userPassword={undefined} // Will prompt for password when needed
       />
     </div>
   );

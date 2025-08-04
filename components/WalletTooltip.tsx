@@ -78,7 +78,7 @@ export default function WalletTooltip({ wallet, isVisible, position, onMouseEnte
       <div className="flex items-center gap-3 mb-4 pb-3 border-b border-slate-700/60">
         <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
           <span className="text-white text-sm font-bold">
-            {wallet.derivationIndex + 1}
+            {(wallet.derivationIndex ?? 0) + 1}
           </span>
         </div>
         <div>

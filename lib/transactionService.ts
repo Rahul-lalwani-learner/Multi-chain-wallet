@@ -53,8 +53,6 @@ export class TransactionService {
         preflightCommitment: 'confirmed',
       });
 
-      console.log('Transaction sent:', signature);
-
       // Return signature immediately - don't wait for full confirmation
       return signature;
     } catch (error) {
@@ -131,8 +129,6 @@ export class TransactionService {
 
       // Send transaction
       const txResponse = await wallet.sendTransaction(transaction);
-      
-      console.log('Ethereum transaction sent:', txResponse.hash);
       
       // Return hash immediately - don't wait for confirmation
       return txResponse.hash;

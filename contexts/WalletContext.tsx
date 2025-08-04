@@ -5,11 +5,13 @@ import toast from 'react-hot-toast';
 import { WalletState, Wallet, Balance } from '../lib/types';
 import { 
   loadWalletState, 
-  saveWalletState, 
+  saveWalletState,
   hasExistingWallet,
   loadEncryptedMnemonic,
   saveEncryptedMnemonic,
-  clearWalletData 
+  clearWalletData,
+  loadNetwork,
+  saveNetwork 
 } from '../lib/storage';
 import { generateMultipleWallets, generateWallet, validateMnemonic } from '../lib/walletUtils';
 import { BlockchainService } from '../lib/blockchainService';
@@ -40,15 +42,22 @@ type WalletAction =
   | { type: 'DELETE_WALLET'; payload: string }
   | { type: 'SET_CURRENT_WALLET'; payload: string }
   | { type: 'SET_NETWORK'; payload: 'mainnet' | 'testnet' }
+  | { type: 'SET_PASSWORD'; payload: string }
+  | { type: 'CLEAR_PASSWORD' }
   | { type: 'RESET_STATE' };
 
-const initialState: WalletState = {
+// Extended state to include password in memory for secure operations
+interface ExtendedWalletState extends WalletState {
+  password?: string; // Temporary in-memory storage for encryption operations
+}
+
+const initialState: ExtendedWalletState = {
   isUnlocked: false,
   wallets: [],
   network: 'mainnet',
 };
 
-const walletReducer = (state: WalletState, action: WalletAction): WalletState => {
+const walletReducer = (state: ExtendedWalletState, action: WalletAction): ExtendedWalletState => {
   switch (action.type) {
     case 'SET_UNLOCKED':
       return { ...state, isUnlocked: action.payload };
@@ -78,8 +87,11 @@ const walletReducer = (state: WalletState, action: WalletAction): WalletState =>
     case 'SET_CURRENT_WALLET':
       return { ...state, currentWalletId: action.payload };
     case 'SET_NETWORK':
-      console.log('Reducer: Setting network from', state.network, 'to', action.payload);
       return { ...state, network: action.payload };
+    case 'SET_PASSWORD':
+      return { ...state, password: action.payload };
+    case 'CLEAR_PASSWORD':
+      return { ...state, password: undefined };
     case 'RESET_STATE':
       return initialState;
     default:
@@ -94,20 +106,16 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [blockchainService] = React.useState(() => new BlockchainService(state.network));
 
   useEffect(() => {
-    // Load initial state from localStorage
-    const storedState = loadWalletState();
-    if (storedState.wallets?.length) {
-      dispatch({ type: 'SET_WALLETS', payload: storedState.wallets });
-    }
-    if (storedState.network) {
-      dispatch({ type: 'SET_NETWORK', payload: storedState.network });
-    }
-  }, []);
+    // Only load network setting on initial load, avoid loading any wallet data
+    const network = loadNetwork();
+    dispatch({ type: 'SET_NETWORK', payload: network });
+  }, []); // Only run once on mount
 
   useEffect(() => {
     // Update blockchain service when network changes
     blockchainService.switchNetwork(state.network);
-    saveWalletState({ network: state.network });
+    // Save network directly without touching wallet data
+    saveNetwork(state.network);
   }, [state.network, blockchainService]);
 
   const createWallet = async (mnemonic: string, password: string): Promise<boolean> => {
@@ -122,18 +130,19 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       // Save encrypted mnemonic
       saveEncryptedMnemonic(mnemonic, password);
       
-      // Save wallet data
-      saveWalletState({ wallets });
+      // Save wallet data using the provided password
+      saveWalletState({ wallets }, password);
       
       // Update state
       dispatch({ type: 'SET_MNEMONIC', payload: mnemonic });
       dispatch({ type: 'SET_WALLETS', payload: wallets });
       dispatch({ type: 'SET_CURRENT_WALLET', payload: wallets[0].id });
       dispatch({ type: 'SET_UNLOCKED', payload: true });
+      dispatch({ type: 'SET_PASSWORD', payload: password }); // Store password for future operations
       
       return true;
     } catch (error) {
-      console.error('Failed to create wallet:', error);
+      console.error('❌ Failed to create wallet:', error);
       return false;
     }
   };
@@ -142,14 +151,18 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     try {
       const mnemonic = loadEncryptedMnemonic(password);
       if (!mnemonic) {
+        console.error('❌ Failed to decrypt mnemonic - incorrect password or no encrypted mnemonic found');
         return false;
       }
 
-      const wallets = loadWalletState().wallets || [];
+      // Load encrypted wallet data using the password
+      const walletState = loadWalletState(password);
+      const wallets = walletState.wallets || [];
       
       dispatch({ type: 'SET_MNEMONIC', payload: mnemonic });
       dispatch({ type: 'SET_WALLETS', payload: wallets });
       dispatch({ type: 'SET_UNLOCKED', payload: true });
+      dispatch({ type: 'SET_PASSWORD', payload: password }); // Store password for secure operations
       
       if (wallets.length > 0) {
         dispatch({ type: 'SET_CURRENT_WALLET', payload: wallets[0].id });
@@ -157,7 +170,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       
       return true;
     } catch (error) {
-      console.error('Failed to unlock wallet:', error);
+      console.error('❌ Failed to unlock wallet:', error);
+      if (error instanceof Error && error.message.includes('Malformed UTF-8')) {
+        console.error('💡 This usually means the password is incorrect or the encrypted data is corrupted');
+      }
       return false;
     }
   };
@@ -174,6 +190,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const lockWallet = () => {
     dispatch({ type: 'SET_UNLOCKED', payload: false });
     dispatch({ type: 'SET_MNEMONIC', payload: '' });
+    dispatch({ type: 'CLEAR_PASSWORD' }); // Clear password from memory
   };
 
   const addNewAccount = (name?: string) => {
@@ -186,7 +203,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const newWallet = generateWallet(state.mnemonic, newIndex, finalName);
     
     const updatedWallets = [...state.wallets, newWallet];
-    saveWalletState({ wallets: updatedWallets });
+    saveWalletState({ wallets: updatedWallets }, state.password);
     
     dispatch({ type: 'ADD_WALLET', payload: newWallet });
     
@@ -204,7 +221,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const updatedWallets = state.wallets.map(wallet =>
       wallet.id === walletId ? { ...wallet, name: trimmedName } : wallet
     );
-    saveWalletState({ wallets: updatedWallets });
+    saveWalletState({ wallets: updatedWallets }, state.password);
     
     toast.success(`Account renamed to "${trimmedName}"`);
   };
@@ -216,7 +233,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
 
     const updatedWallets = state.wallets.filter(w => w.id !== walletId);
-    saveWalletState({ wallets: updatedWallets });
+    saveWalletState({ wallets: updatedWallets }, state.password);
     
     dispatch({ type: 'DELETE_WALLET', payload: walletId });
     
@@ -231,7 +248,6 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   };
 
   const switchNetwork = (network: 'mainnet' | 'testnet') => {
-    console.log('WalletContext: Switching network from', state.network, 'to', network);
     dispatch({ type: 'SET_NETWORK', payload: network });
   };
 

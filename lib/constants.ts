@@ -24,7 +24,8 @@ export const NETWORK_CONFIG: NetworkConfig = {
 
 export const STORAGE_KEYS = {
   ENCRYPTED_MNEMONIC: 'crypto_wallet_mnemonic',
-  WALLET_DATA: 'crypto_wallet_data',
+  WALLET_DATA: 'crypto_wallet_data', // ⚠️ Legacy key - may contain unencrypted private keys!
+  ENCRYPTED_WALLET_DATA: 'crypto_wallet_data_encrypted', // 🔒 New secure key for encrypted private keys
   NETWORK: 'crypto_wallet_network',
 } as const;
 

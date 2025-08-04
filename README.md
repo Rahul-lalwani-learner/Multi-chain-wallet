@@ -49,23 +49,45 @@ m / purpose' / coin_type' / account' / change / address_index
 
 ## 🛡️ Security Features
 
-### Password-Based Encryption
-- **AES-256-GCM Encryption**: Mnemonic phrases are encrypted using industry-standard AES-256-GCM
-- **PBKDF2 Key Derivation**: User passwords are strengthened using PBKDF2 with 100,000 iterations
-- **Salt Generation**: Unique salt for each encryption to prevent rainbow table attacks
-- **Authentication Tag**: GCM mode provides built-in authentication to detect tampering
+### 🔒 Enhanced Encryption (Version 2.0)
+- **AES-256-CBC Encryption**: All sensitive data encrypted with industry-standard AES encryption
+- **Random Salt Generation**: Each encryption uses a unique 32-byte salt to prevent rainbow table attacks  
+- **PBKDF2 Key Derivation**: User passwords strengthened using PBKDF2 with 100,000 iterations
+- **Private Key Protection**: All private keys encrypted before storage (no more plain text!)
+- **Secure Random Generation**: All cryptographic operations use secure random number generation
 
-### Secure Storage
-- **Browser Local Storage**: Encrypted data is stored locally in the browser
-- **No Server Storage**: Private keys never leave your device
-- **Memory Protection**: Sensitive data is cleared from memory when possible
+### 🚨 Critical Security Upgrade
+**IMPORTANT**: This version fixes a critical vulnerability where private keys were stored in plain text in localStorage.
+
+- **Before**: Private keys visible to anyone with device access
+- **After**: All private keys encrypted with enterprise-grade security
+- **Auto-Migration**: Existing wallets automatically upgraded to secure format
+
+### 🛡️ Security Dashboard
+- **Real-time Analysis**: Continuous security monitoring and vulnerability detection
+- **Security Score**: 0-100 rating system for overall wallet security  
+- **One-Click Auto-Fix**: Automatically resolves critical security issues
+- **User Guidance**: Built-in security tips and best practices
+- **Emergency Procedures**: Clear guidance for compromised wallet scenarios
+
+### 🔍 Security Indicators
+- 🟢 **Secure**: All data properly encrypted with latest security standards
+- 🟡 **Warning**: Using legacy encryption that should be upgraded  
+- 🔴 **Critical**: Unencrypted data found - immediate action required
+
+### 🔐 Secure Storage
+- **Browser Local Storage**: Encrypted data stored locally in the browser
+- **No Server Storage**: Private keys never leave your device  
+- **Memory Protection**: Sensitive data cleared from memory when possible
 - **Password Confirmation**: Critical operations require password verification
+- **Automatic Migration**: Seamless upgrade from insecure legacy formats
 
-### Security Best Practices
+### 🛠️ Security Best Practices
 - **Zero Trust**: Application assumes no external service can be trusted
 - **Principle of Least Privilege**: Only necessary permissions are requested
 - **Defense in Depth**: Multiple layers of security protection
-- **Secure Defaults**: All security features are enabled by default
+- **Secure Defaults**: All security features enabled by default
+- **User Education**: Comprehensive security guidance and warnings
 
 ## 🌐 Multi-Chain Support
 

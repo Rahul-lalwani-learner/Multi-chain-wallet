@@ -11,8 +11,6 @@ export class FaucetService {
       // Request 2 SOL (2 * LAMPORTS_PER_SOL)
       const signature = await connection.requestAirdrop(publicKey, 2 * LAMPORTS_PER_SOL);
       
-      console.log('Airdrop signature:', signature);
-      
       // Don't wait for confirmation to avoid timeout - just return success
       // The tokens will appear after a few seconds
       return signature;

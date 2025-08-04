@@ -35,6 +35,7 @@ export interface NetworkConfig {
 export interface EncryptedData {
   encrypted: string;
   iv: string;
+  salt: string;
 }
 
 export interface Transaction {
